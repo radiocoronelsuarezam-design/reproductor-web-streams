@@ -3,351 +3,341 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transmisión Multimedial Automática</title>
+    <title>Reproductor Radio Coronel Suárez</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        /* Diseño principal y responsivo */
+        :root {
+            --bg-color: #1e1e24;
+            --container-bg: #2b2b36;
+            --text-main: #f5f5f5;
+            --text-muted: #a0a0a0;
+            --accent: #e63946;
+            --accent-hover: #d62828;
+            --radius: 12px;
         }
 
         body {
-            background: #121212;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: #fff;
-            padding: 20px;
         }
 
-        .multi-player-container {
-            background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
-            width: 340px;
-            border-radius: 20px;
+        .media-player-container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--container-bg);
+            border-radius: var(--radius);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            padding: 20px;
-            border: 1px solid #333;
-            gap: 20px;
         }
 
+        /* Sección de Video */
         .video-section {
             width: 100%;
+            border-bottom: 2px solid #1e1e24;
+            position: relative;
         }
 
-        .stream-title {
+        .video-header {
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .video-title {
+            margin: 0;
             font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 10px;
-            text-align: center;
-            color: #fff;
-            min-height: 24px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .video-wrapper {
             position: relative;
             width: 100%;
-            padding-top: 56.25%;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            padding-top: 56.25%; /* Relación de aspecto 16:9 */
+            background-color: #000;
         }
 
-        .video-wrapper iframe {
+        #yt-player {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            border: 0;
-        }
-
-        .divider {
-            height: 1px;
-            background: linear-gradient(to right, transparent, #444, transparent);
-            width: 100%;
-        }
-
-        .audio-section {
-            width: 100%;
-        }
-
-        .audio-horizontal-player {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 12px 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .btn-audio-play {
-            background-color: #fff;
             border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-shrink: 0;
-            transition: transform 0.2s ease;
         }
 
-        .btn-audio-play:hover {
-            transform: scale(1.05);
-        }
-
-        .btn-audio-play svg {
-            width: 24px;
-            height: 24px;
-            fill: #121212;
-        }
-
-        .audio-info-controls {
+        .offline-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2b2b36 0%, #1e1e24 100%);
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            flex-grow: 1;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        .audio-label {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #ddd;
+        .offline-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--text-muted);
         }
 
-        .audio-status-container {
+        /* Sección de Audio */
+        .audio-section {
+            padding: 20px;
+            background: var(--container-bg);
+        }
+
+        .audio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .audio-title {
+            margin: 0;
+            font-size: 1.2rem;
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 0.75rem;
-            color: #aaa;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            gap: 10px;
         }
 
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            background-color: #555;
+        .live-indicator {
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent);
             border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
         }
 
-        .status-dot.active {
-            background-color: #00ff66;
-            box-shadow: 0 0 6px #00ff66;
+        .audio-status {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-style: italic;
         }
 
-        .volume-container {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        audio {
             width: 100%;
-        }
-
-        .volume-container svg {
-            width: 16px;
-            height: 16px;
-            fill: #888;
-        }
-
-        .volume-slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 4px;
-            border-radius: 2px;
-            background: #444;
+            height: 40px;
             outline: none;
-            cursor: pointer;
         }
 
-        .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #fff;
-            cursor: pointer;
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(230, 57, 70, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0); }
         }
     </style>
 </head>
 <body>
 
-    <div class="multi-player-container">
+    <div class="media-player-container">
         <div class="video-section">
-            <div class="stream-title" id="youtubeTitle">Buscando señal de transmisión...</div>
-            <div class="video-wrapper">
-                <div id="ytPlayer"></div>
+            <div class="video-header">
+                <h2 id="yt-status-title" class="video-title">Comprobando transmisión...</h2>
             </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="audio-section">
-            <div class="audio-horizontal-player">
-                <button class="btn-audio-play" id="audioPlayBtn" title="Reproducir Radio">
-                    <svg id="audioPlayIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                </button>
-                
-                <div class="audio-info-controls">
-                    <div class="audio-status-container">
-                        <span class="audio-label">Radio en vivo</span>
-                        <span class="status-dot" id="audioStatusDot"></span>
-                        <span id="audioStatusText">Detenido</span>
-                    </div>
-                    
-                    <div class="volume-container">
-                        <svg viewBox="0 0 24 24"><path d="M18.5 12A4.5 4.5 0 0 0 16 8v8a4.5 4.5 0 0 0 2.5-4M5 9v6h4l5 5V4L9 9H5z"/></svg>
-                        <input type="range" class="volume-slider" id="audioVolume" min="0" max="1" step="0.05" value="0.8">
-                        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-                    </div>
+            <div class="video-wrapper">
+                <iframe id="yt-player" 
+                    src="https://www.youtube.com/embed/live_stream?channel=UCoUj9R__8Hj9N5SF90mm5gw&enablejsapi=1&mute=1" 
+                    allow="autoplay; encrypted-media" 
+                    allowfullscreen>
+                </iframe>
+                <div id="offline-banner" class="offline-banner" style="display: none;">
+                    <div class="offline-icon">📡</div>
+                    <h3>No hay transmisión en este momento</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Buscando nuevos directos de @radiocoronelsuarez...</p>
                 </div>
             </div>
         </div>
+
+        <div class="audio-section">
+            <div class="audio-header">
+                <h2 class="audio-title"><span class="live-indicator"></span> Radio en vivo</h2>
+                <span id="audio-status" class="audio-status">Detenido</span>
+            </div>
+            <audio id="radio-audio" controls preload="none">
+                <source src="https://01.solumedia.com.ar:8014/stream?icy=http" type="audio/mpeg">
+                Tu navegador no soporta el elemento de audio.
+            </audio>
+        </div>
     </div>
 
-    <audio id="audioStream" src="https://01.solumedia.com.ar:8014/stream?icy=http" preload="none"></audio>
-
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
+        // --- VARIABLES GLOBALES ---
         let ytPlayer;
-        let checkLiveInterval;
-        let isLiveActive = false;
+        let ytPollingInterval;
+        let audioRetryInterval;
+        let audioRetryTime = 0;
+        const maxRetryTime = 60000; // 60 segundos de reconexión
 
-        const youtubeTitle = document.getElementById('youtubeTitle');
-        const audioStream = document.getElementById('audioStream');
-        const audioPlayBtn = document.getElementById('audioPlayBtn');
-        const audioPlayIcon = document.getElementById('audioPlayIcon');
-        const audioStatusDot = document.getElementById('audioStatusDot');
-        const audioStatusText = document.getElementById('audioStatusText');
-        const audioVolume = document.getElementById('audioVolume');
+        const radioAudio = document.getElementById('radio-audio');
+        const audioStatusText = document.getElementById('audio-status');
+        const ytTitleText = document.getElementById('yt-status-title');
+        const offlineBanner = document.getElementById('offline-banner');
+        const iframeEl = document.getElementById('yt-player');
 
-        const svgPlay = "M8 5v14l11-7z";
-        const svgPause = "M6 19h4V5H6v14zm8-14v14h4V5h-4z";
-
+        // --- LÓGICA DE YOUTUBE ---
         function onYouTubeIframeAPIReady() {
-            initYoutubePlayer();
-        }
-
-        function initYoutubePlayer() {
-            ytPlayer = new YT.Player('ytPlayer', {
-                height: '100%',
-                width: '100%',
-                videoId: 'live_stream',
-                playerVars: {
-                    'channel': 'UCoUj9R__8Hj9N5SF90mm5gw',
-                    'autoplay': 1,
-                    'mute': 1,
-                    'controls': 1,
-                    'rel': 0
-                },
+            ytPlayer = new YT.Player('yt-player', {
                 events: {
                     'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
+                    'onStateChange': onPlayerStateChange,
+                    'onError': onPlayerError
                 }
             });
         }
 
         function onPlayerReady(event) {
-            verificarTransmision();
-            
-            // Creamos un bucle que revisa el estado cada 30 segundos si no está en vivo
-            if (!checkLiveInterval) {
-                checkLiveInterval = setInterval(() => {
-                    if (!isLiveActive) {
-                        // Forzamos al reproductor a intentar recargar el live_stream de forma silenciosa
-                        if (ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
-                            ytPlayer.loadVideoById({
-                                videoId: 'live_stream',
-                                startSeconds: 0
-                            });
-                            // Nos aseguramos que mantenga el mute automático al testear de fondo
-                            ytPlayer.mute(); 
-                        }
-                        verificarTransmision();
-                    }
-                }, 30000); // 30 segundos
+            // Evaluamos si cargó un video o si está vacío (offline)
+            const videoData = ytPlayer.getVideoData();
+            if (!videoData || !videoData.video_id) {
+                setYTOffline();
+            } else {
+                setYTLive(videoData.title);
             }
-        }
-
-        function verificarTransmision() {
-            setTimeout(() => {
-                if (ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
-                    const state = ytPlayer.getPlayerState();
-                    
-                    // Si el estado es 1 (PLAYING) o está cargando (BUFFERING) asumimos señal activa
-                    if (state === YT.PlayerState.PLAYING || state === YT.PlayerState.BUFFERING) {
-                        marcarComoEnVivo();
-                    } else {
-                        youtubeTitle.textContent = "No hay ninguna transmisión en vivo";
-                        isLiveActive = false;
-                    }
-                }
-            }, 4000); // Espera 4 segundos a que YouTube intente conectar la señal
-        }
-
-        function marcarComoEnVivo() {
-            youtubeTitle.textContent = "🔴 Transmisión en Vivo";
-            isLiveActive = true;
-            // Detenemos el audio si arranca el vivo de manera imprevista
-            pauseAudioStream();
         }
 
         function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.PLAYING) {
-                if (!isLiveActive) {
-                    marcarComoEnVivo();
+            const state = event.data;
+            
+            // Si el video está reproduciéndose
+            if (state === YT.PlayerState.PLAYING) {
+                const videoData = ytPlayer.getVideoData();
+                setYTLive(videoData.title);
+                
+                // EXCLUSIVIDAD: Pausar la radio si el video arranca
+                if (!radioAudio.paused) {
+                    radioAudio.pause();
                 }
-                // Si el usuario le da play al video, frenamos la radio
-                pauseAudioStream();
+            }
+            
+            // Si el directo terminó
+            if (state === YT.PlayerState.ENDED) {
+                setYTOffline();
             }
         }
 
-        // --- MANEJO DEL REPRODUCTOR DE AUDIO ---
-        audioPlayBtn.addEventListener('click', () => {
-            if (audioStream.paused) {
-                if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
+        function onPlayerError(event) {
+            // Los errores comunes (como 150) en streams de canal suelen indicar que no hay vivo
+            setYTOffline();
+        }
+
+        function setYTLive(title) {
+            stopYTPolling();
+            offlineBanner.style.display = 'none';
+            ytTitleText.innerText = title ? title : "Transmisión en Vivo";
+        }
+
+        function setYTOffline() {
+            offlineBanner.style.display = 'flex';
+            ytTitleText.innerText = "No hay transmisión en este momento";
+            startYTPolling();
+        }
+
+        function startYTPolling() {
+            if (!ytPollingInterval) {
+                // Chequear cada 1 minuto recargando el iframe
+                ytPollingInterval = setInterval(() => {
+                    const currentSrc = iframeEl.src;
+                    iframeEl.src = ''; // Forzar recarga limpia
+                    setTimeout(() => { iframeEl.src = currentSrc; }, 100);
+                }, 60000); 
+            }
+        }
+
+        function stopYTPolling() {
+            if (ytPollingInterval) {
+                clearInterval(ytPollingInterval);
+                ytPollingInterval = null;
+            }
+        }
+
+        // --- LÓGICA DE AUDIO (RADIO STREAM) ---
+        
+        // Eventos básicos de estado
+        radioAudio.addEventListener('play', () => {
+            audioStatusText.innerText = 'Conectando...';
+        });
+
+        radioAudio.addEventListener('playing', () => {
+            audioStatusText.innerText = 'Reproduciendo';
+            // Detener reconexión si fue exitosa
+            clearInterval(audioRetryInterval);
+            audioRetryInterval = null;
+            audioRetryTime = 0;
+
+            // EXCLUSIVIDAD: Pausar YouTube si la radio arranca
+            if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
+                const ytState = ytPlayer.getPlayerState();
+                if (ytState === YT.PlayerState.PLAYING || ytState === YT.PlayerState.BUFFERING) {
                     ytPlayer.pauseVideo();
                 }
-
-                audioStream.load();
-                audioStream.play()
-                    .then(() => {
-                        audioPlayIcon.setAttribute('d', svgPause);
-                        audioStatusText.textContent = 'En Vivo';
-                        audioStatusDot.classList.add('active');
-                    })
-                    .catch(error => {
-                        console.error("Error en streaming de audio:", error);
-                        audioStatusText.textContent = 'Error';
-                    });
-            } else {
-                pauseAudioStream();
             }
         });
 
-        function pauseAudioStream() {
-            audioStream.pause();
-            audioPlayIcon.setAttribute('d', svgPlay);
-            audioStatusText.textContent = 'Detenido';
-            audioStatusDot.classList.remove('active');
+        radioAudio.addEventListener('pause', () => {
+            // Si el usuario pausa manualmente y no está en ciclo de error
+            if (audioStatusText.innerText !== 'Reconectando...' && audioStatusText.innerText !== 'Desconectado') {
+                audioStatusText.innerText = 'Detenido';
+            }
+        });
+
+        radioAudio.addEventListener('waiting', () => {
+            audioStatusText.innerText = 'Cargando/Buffering...';
+        });
+
+        // Lógica de 60 segundos de reconexión ante cortes
+        function handleAudioError() {
+            // Si el usuario le dio pause manual o ya fracasó la reconexión, ignorar.
+            if (radioAudio.paused && audioStatusText.innerText !== 'Reconectando...') return; 
+
+            audioStatusText.innerText = 'Reconectando...';
+            
+            if (!audioRetryInterval) {
+                audioRetryInterval = setInterval(() => {
+                    audioRetryTime += 5000; // Incremento de 5 segundos
+                    
+                    if (audioRetryTime >= maxRetryTime) {
+                        // Tiempo agotado (60 segs)
+                        clearInterval(audioRetryInterval);
+                        audioRetryInterval = null;
+                        audioRetryTime = 0;
+                        audioStatusText.innerText = 'Desconectado';
+                        radioAudio.pause();
+                        
+                        // Restaurar fuente original
+                        radioAudio.src = "https://01.solumedia.com.ar:8014/stream?icy=http"; 
+                    } else {
+                        // Intentar reconectar agregando un timestamp para evitar caché
+                        const timestamp = new Date().getTime();
+                        radioAudio.src = "https://01.solumedia.com.ar:8014/stream?icy=http&t=" + timestamp;
+                        radioAudio.play().catch(e => { /* Silenciar error en consola por autoplay */ });
+                    }
+                }, 5000); // Reintento cada 5 segundos
+            }
         }
 
-        audioVolume.addEventListener('input', (e) => {
-            audioStream.volume = e.target.value;
-        });
+        radioAudio.addEventListener('error', handleAudioError);
+        radioAudio.addEventListener('stalled', handleAudioError);
+
     </script>
 </body>
 </html>
