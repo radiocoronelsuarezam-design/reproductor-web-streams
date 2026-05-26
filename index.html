@@ -293,8 +293,6 @@
     <audio id="audioStream" src="https://01.solumedia.com.ar:8014/stream?icy=http" preload="none"></audio>
 
     <script>
-        const CHANNEL_ID = 'UCoUj9R__8Hj9N5SF90mm5gw'; 
-        
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -303,7 +301,7 @@
         let ytPlayer;
         let checkLiveInterval;
         let isLiveActive = false;
-        let audioTimeout; 
+        let audioTimeout; // Control del corte de red
 
         const youtubeTitle = document.getElementById('youtubeTitle');
         const offlinePlaceholder = document.getElementById('offlinePlaceholder');
@@ -325,9 +323,9 @@
             ytPlayer = new YT.Player('ytPlayer', {
                 height: '100%',
                 width: '100%',
+                videoId: 'live_stream',
                 playerVars: {
-                    'listType': 'live_stream',
-                    'list': CHANNEL_ID,
+                    'channel': 'UCoUj9R__8Hj9N5SF90mm5gw',
                     'autoplay': 1,
                     'mute': 1,
                     'controls': 1,
@@ -346,15 +344,15 @@
             if (!checkLiveInterval) {
                 checkLiveInterval = setInterval(() => {
                     if (!isLiveActive) {
-                        if (ytPlayer && typeof ytPlayer.loadPlaylist === 'function') {
-                            ytPlayer.loadPlaylist({
-                                listType: 'live_stream',
-                                list: CHANNEL_ID
+                        if (ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+                            ytPlayer.loadVideoById({
+                                videoId: 'live_stream',
+                                startSeconds: 0
                             });
                             ytPlayer.mute(); 
                         }
+                        verificarTransmision();
                     }
-                    verificarTransmision();
                 }, 30000);
             }
         }
@@ -364,33 +362,35 @@
                 if (ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
                     const state = ytPlayer.getPlayerState();
                     const videoData = ytPlayer.getVideoData();
-                    
                     const hasValidTitle = videoData && videoData.title && videoData.title !== "" && !videoData.title.includes("live_stream");
-                    const isPlayingOrBuffering = (state === YT.PlayerState.PLAYING || state === YT.PlayerState.BUFFERING || state === YT.PlayerState.CUED);
 
-                    if (isPlayingOrBuffering && hasValidTitle) {
-                        marcarComoEnVivo(videoData.title);
+                    if ((state === YT.PlayerState.PLAYING || state === YT.PlayerState.BUFFERING) && hasValidTitle) {
+                        marcarComoEnVivo();
                     } else {
                         marcarComoOffline();
                     }
                 }
-            }, 4000); 
+            }, 4000);
         }
 
-        function marcarComoEnVivo(titulo) {
+        function marcarComoEnVivo() {
             isLiveActive = true;
-            youtubeTitle.textContent = titulo || "🔴 Transmisión en Vivo";
+            if (ytPlayer && typeof ytPlayer.getVideoData === 'function') {
+                const videoData = ytPlayer.getVideoData();
+                if (videoData && videoData.title) {
+                    youtubeTitle.textContent = videoData.title;
+                } else {
+                    youtubeTitle.textContent = "🔴 Transmisión en Vivo";
+                }
+            }
             offlinePlaceholder.classList.add('hidden');
-            pauseAudioStream(); 
+            pauseAudioStream();
         }
 
         function marcarComoOffline() {
             youtubeTitle.textContent = "No hay ninguna transmisión en vivo";
             offlinePlaceholder.classList.remove('hidden');
             isLiveActive = false;
-            if (ytPlayer && typeof ytPlayer.stopVideo === 'function') {
-                ytPlayer.stopVideo();
-            }
         }
 
         function onPlayerStateChange(event) {
