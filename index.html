@@ -151,14 +151,20 @@
     <div class="media-player-container">
         <div class="video-section">
             <div class="video-header">
-                <h2 id="yt-status-title" class="video-title">Comprobando transmisión...</h2>
+                <h2 id="yt-status-title" class="video-title">Buscando transmisión...</h2>
             </div>
             <div class="video-wrapper">
+                <div id="loading-banner" class="offline-banner" style="display: flex;">
+                    <div class="offline-icon">⏳</div>
+                    <h3>Buscando transmisión...</h3>
+                </div>
+
                 <iframe id="yt-player" 
                     src="https://www.youtube.com/embed/live_stream?channel=UCoUj9R__8Hj9N5SF90mm5gw&enablejsapi=1&mute=1" 
                     allow="autoplay; encrypted-media" 
                     allowfullscreen>
                 </iframe>
+                
                 <div id="offline-banner" class="offline-banner" style="display: none;">
                     <div class="offline-icon">📡</div>
                     <h3>No hay transmisión en este momento</h3>
@@ -191,6 +197,7 @@
         const radioAudio = document.getElementById('radio-audio');
         const audioStatusText = document.getElementById('audio-status');
         const ytTitleText = document.getElementById('yt-status-title');
+        const loadingBanner = document.getElementById('loading-banner');
         const offlineBanner = document.getElementById('offline-banner');
         const iframeEl = document.getElementById('yt-player');
 
@@ -218,35 +225,45 @@
         function onPlayerStateChange(event) {
             const state = event.data;
             
-            // Si el video está reproduciéndose
-            if (state === YT.PlayerState.PLAYING) {
+            // Evaluamos con comparación flexible por posibles variaciones de la API
+            if (state == YT.PlayerState.PLAYING) {
                 const videoData = ytPlayer.getVideoData();
-                setYTLive(videoData.title);
+                if (videoData && videoData.title) {
+                    setYTLive(videoData.title);
+                }
                 
                 // EXCLUSIVIDAD: Pausar la radio si el video arranca
                 if (!radioAudio.paused) {
                     radioAudio.pause();
+                    audioStatusText.innerText = 'Detenido';
                 }
             }
             
             // Si el directo terminó
-            if (state === YT.PlayerState.ENDED) {
+            if (state == YT.PlayerState.ENDED) {
                 setYTOffline();
             }
         }
 
         function onPlayerError(event) {
-            // Los errores comunes (como 150) en streams de canal suelen indicar que no hay vivo
             setYTOffline();
         }
 
         function setYTLive(title) {
             stopYTPolling();
+            loadingBanner.style.display = 'none';
             offlineBanner.style.display = 'none';
-            ytTitleText.innerText = title ? title : "Transmisión en Vivo";
+            
+            // Cambia el título de la parte superior de la interfaz por el del Live
+            if (title && title.trim() !== "") {
+                ytTitleText.innerText = title;
+            } else {
+                ytTitleText.innerText = "Transmisión en Vivo";
+            }
         }
 
         function setYTOffline() {
+            loadingBanner.style.display = 'none';
             offlineBanner.style.display = 'flex';
             ytTitleText.innerText = "No hay transmisión en este momento";
             startYTPolling();
@@ -294,7 +311,6 @@
         });
 
         radioAudio.addEventListener('pause', () => {
-            // Si el usuario pausa manualmente y no está en ciclo de error
             if (audioStatusText.innerText !== 'Reconectando...' && audioStatusText.innerText !== 'Desconectado') {
                 audioStatusText.innerText = 'Detenido';
             }
@@ -306,32 +322,28 @@
 
         // Lógica de 60 segundos de reconexión ante cortes
         function handleAudioError() {
-            // Si el usuario le dio pause manual o ya fracasó la reconexión, ignorar.
             if (radioAudio.paused && audioStatusText.innerText !== 'Reconectando...') return; 
 
             audioStatusText.innerText = 'Reconectando...';
             
             if (!audioRetryInterval) {
                 audioRetryInterval = setInterval(() => {
-                    audioRetryTime += 5000; // Incremento de 5 segundos
+                    audioRetryTime += 5000; 
                     
                     if (audioRetryTime >= maxRetryTime) {
-                        // Tiempo agotado (60 segs)
                         clearInterval(audioRetryInterval);
                         audioRetryInterval = null;
                         audioRetryTime = 0;
                         audioStatusText.innerText = 'Desconectado';
                         radioAudio.pause();
                         
-                        // Restaurar fuente original
                         radioAudio.src = "https://01.solumedia.com.ar:8014/stream?icy=http"; 
                     } else {
-                        // Intentar reconectar agregando un timestamp para evitar caché
                         const timestamp = new Date().getTime();
                         radioAudio.src = "https://01.solumedia.com.ar:8014/stream?icy=http&t=" + timestamp;
-                        radioAudio.play().catch(e => { /* Silenciar error en consola por autoplay */ });
+                        radioAudio.play().catch(e => {});
                     }
-                }, 5000); // Reintento cada 5 segundos
+                }, 5000);
             }
         }
 
