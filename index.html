@@ -19,14 +19,15 @@
             align-items: center;
             min-height: 100vh;
             color: #fff;
+            padding: 20px;
         }
 
         /* Contenedor principal vertical */
         .multi-player-container {
             background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
             width: 340px;
-            /*border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);*/
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
             padding: 20px;
@@ -242,7 +243,7 @@
                 
                 <div class="audio-info-controls">
                     <div class="audio-status-container">
-                        <span class="audio-label">Radio en vivo</span>
+                        <span class="audio-label">Señal de Audio</span>
                         <span class="status-dot" id="audioStatusDot"></span>
                         <span id="audioStatusText">Detenido</span>
                     </div>
@@ -349,7 +350,7 @@
             if (ytPlayer && typeof ytPlayer.getVideoData === 'function') {
                 const videoData = ytPlayer.getVideoData();
                 if (videoData && videoData.title) {
-                    youtubeTitle.textContent = videoData.title;
+                    youtubeTitle.textContent = "🔴 " + videoData.title;
                 } else {
                     youtubeTitle.textContent = "🔴 Transmisión en Vivo";
                 }
