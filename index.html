@@ -212,6 +212,9 @@
         // --- LÓGICA DE YOUTUBE ---
         function onYouTubeIframeAPIReady() {
             ytPlayer = new YT.Player('yt-player', {
+                playerVars: {
+                    'fs': 1 // Fuerza a que se habilite el botón de pantalla completa
+                },
                 events: {
                     'onReady': onPlayerReady,
                     'onStateChange': onPlayerStateChange,
