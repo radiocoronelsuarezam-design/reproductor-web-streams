@@ -3,353 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reproductor Radio Coronel Suárez</title>
+    <title>Prueba Widget Clima - Modo Día/Noche</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
     <style>
-        /* Diseño principal y responsivo */
-        :root {
-            --bg-color: #1e1e24;
-            --container-bg: #2b2b36;
-            --text-main: #f5f5f5;
-            --text-muted: #a0a0a0;
-            --accent: #e63946;
-            --accent-hover: #d62828;
-            --radius: 12px;
-        }
-
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
         }
-
-        .media-player-container {
-            width: 100%;
-            max-width: 600px;
-            background: var(--container-bg);
-            border-radius: var(--radius);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Sección de Video */
-        .video-section {
-            width: 100%;
-            border-bottom: 2px solid #1e1e24;
-            position: relative;
-        }
-
-        .video-header {
-            padding: 15px 20px;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .video-title {
-            margin: 0;
-            font-size: 1.1rem;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            padding-top: 56.25%; /* Relación de aspecto 16:9 */
-            background-color: #000;
-        }
-
-        #yt-player {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .offline-banner {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #2b2b36 0%, #1e1e24 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
+        .clima-widget {
+            background: linear-gradient(135deg, #1f4068 0%, #162447 100%);
+            color: #ffffff;
+            width: 310px;
+            border-radius: 16px;
+            padding: 20px;
+            /*box-shadow: 0 8px 20px rgba(22, 36, 71, 0.2);*/
             text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
         }
-
-        .offline-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            color: var(--text-muted);
+        .clima-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            padding-bottom: 10px;
+            margin-bottom: 14px;
         }
-
-        /* Sección de Audio */
-        .audio-section {
-            padding: 20px;
-            background: var(--container-bg);
+        .clima-ciudad { font-size: 1.2rem; font-weight: 700; margin: 0; }
+        .clima-fuente { font-size: 0.7rem; color: rgba(255, 255, 255, 0.6); margin: 4px 0 0 0; text-transform: uppercase; }
+        
+        .clima-principal { 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 8px 0;
         }
+        .clima-temp { font-size: 3.2rem; font-weight: 300; margin: 0; line-height: 1; }
+        .clima-icono { font-size: 3.2rem; line-height: 1; } 
 
-        .audio-header {
+        .clima-desc-container { margin-bottom: 8px; }
+        .clima-desc { font-size: 0.95rem; font-weight: 500; background: rgba(255, 255, 255, 0.15); padding: 5px 12px; border-radius: 20px; display: inline-block; text-transform: capitalize; }
+        .clima-detalles { border-top: 1px solid rgba(255, 255, 255, 0.15); padding-top: 12px; margin-top: 12px; }
+        .detalle-fila { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.85rem; }
+        
+        .clima-extendido {
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            margin-top: 14px;
+            padding-top: 14px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
         }
-
-        .audio-title {
-            margin: 0;
-            font-size: 1.2rem;
+        .dia-pronostico {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+        .dia-nombre {
+            font-weight: 600;
+            text-transform: capitalize;
+            margin-bottom: 4px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .dia-icono {
+            font-size: 1.4rem;
+            margin: 4px 0;
+            height: 28px;
             display: flex;
             align-items: center;
-            gap: 10px;
         }
-
-        .live-indicator {
-            width: 10px;
-            height: 10px;
-            background-color: var(--accent);
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse 1.5s infinite;
+        .dia-temps {
+            font-size: 0.75rem;
+            font-weight: 500;
         }
-
-        .audio-status {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            font-style: italic;
-        }
-
-        audio {
-            width: 100%;
-            height: 40px;
-            outline: none;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(230, 57, 70, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0); }
-        }
+        .temp-max { color: #ffbc00; margin-right: 4px; }
+        .temp-min { color: #a5d6a7; }
     </style>
 </head>
 <body>
 
-    <div class="media-player-container">
-        <div class="video-section">
-            <div class="video-header">
-                <h2 id="yt-status-title" class="video-title">Buscando transmisión...</h2>
-            </div>
-            <div class="video-wrapper">
-                <div id="loading-banner" class="offline-banner" style="display: flex;">
-                    <div class="offline-icon">⏳</div>
-                    <h3>Buscando transmisión...</h3>
-                </div>
-
-                <iframe id="yt-player" 
-                    src="https://www.youtube.com/embed/live_stream?channel=UCoUj9R__8Hj9N5SF90mm5gw&enablejsapi=1&mute=1" 
-                    allow="autoplay; encrypted-media" 
-                    allowfullscreen>
-                </iframe>
-                
-                <div id="offline-banner" class="offline-banner" style="display: none;">
-                    <div class="offline-icon">📡</div>
-                    <h3>No hay transmisión en este momento</h3>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Buscando nuevos directos de @radiocoronelsuarez...</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="audio-section">
-            <div class="audio-header">
-                <h2 class="audio-title"><span class="live-indicator"></span> Radio en vivo</h2>
-                <span id="audio-status" class="audio-status">Detenido</span>
-            </div>
-            <audio id="radio-audio" controls preload="none">
-                <source src="https://01.solumedia.com.ar:8014/stream?icy=http" type="audio/mpeg">
-                Tu navegador no soporta el elemento de audio.
-            </audio>
-        </div>
+<div class="clima-widget">
+    <div class="clima-header">
+        <h2 class="clima-ciudad">Coronel Suárez</h2>
+        <p class="clima-fuente">Estado del tiempo</p>
+    </div>
+    
+    <div class="clima-principal">
+        <div class="clima-temp" id="smn-temp">--°</div>
+        <div class="clima-icono" id="smn-icono"><i class="bi bi-cloud-sun" style="color: #e0e0e0;"></i></div>
+    </div>
+    
+    <div class="clima-desc-container">
+        <div class="clima-desc" id="smn-desc">Cargando...</div>
+    </div>
+    
+    <div class="clima-detalles">
+        <div class="detalle-fila"><span>Humedad</span><span style="font-weight:600;" id="smn-humedad">--%</span></div>
+        <div class="detalle-fila"><span>Viento</span><span style="font-weight:600;" id="smn-viento">-- km/h</span></div>
+        <div class="detalle-fila"><span>Presión</span><span style="font-weight:600;" id="smn-presion">-- hPa</span></div>
     </div>
 
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <script>
-        // --- VARIABLES GLOBALES ---
-        let ytPlayer;
-        let ytPollingInterval;
-        let audioRetryInterval;
-        let audioRetryTime = 0;
-        const maxRetryTime = 60000; // 60 segundos de reconexión
+    <div class="clima-extendido" id="contenedor-extendido">
+        </div>
+</div>
 
-        const radioAudio = document.getElementById('radio-audio');
-        const audioStatusText = document.getElementById('audio-status');
-        const ytTitleText = document.getElementById('yt-status-title');
-        const loadingBanner = document.getElementById('loading-banner');
-        const offlineBanner = document.getElementById('offline-banner');
-        const iframeEl = document.getElementById('yt-player');
-
-        // --- LÓGICA DE YOUTUBE ---
-        function onYouTubeIframeAPIReady() {
-            ytPlayer = new YT.Player('yt-player', {
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange,
-                    'onError': onPlayerError
-                }
-            });
-        }
-
-        function onPlayerReady(event) {
-            // Evaluamos si cargó un video o si está vacío (offline)
-            const videoData = ytPlayer.getVideoData();
-            if (!videoData || !videoData.video_id) {
-                setYTOffline();
-            } else {
-                setYTLive(videoData.title);
-            }
-        }
-
-        function onPlayerStateChange(event) {
-            const state = event.data;
+<script>
+    async function obtenerClima() {
+        try {
+            // Agregamos 'is_day' al parámetro current para saber si es de día o de noche en tiempo real
+            const url = 'https://api.open-meteo.com/v1/forecast?latitude=-37.4547&longitude=-61.9334&current=temperature_2m,relative_humidity_2m,is_day,weather_code,pressure_msl,wind_speed_10m,wind_direction_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=America/Argentina/Buenos_Aires';
             
-            // Evaluamos con comparación flexible por posibles variaciones de la API
-            if (state == YT.PlayerState.PLAYING) {
-                const videoData = ytPlayer.getVideoData();
-                if (videoData && videoData.title) {
-                    setYTLive(videoData.title);
-                }
-                
-                // EXCLUSIVIDAD: Pausar la radio si el video arranca
-                if (!radioAudio.paused) {
-                    radioAudio.pause();
-                    audioStatusText.innerText = 'Detenido';
-                }
-            }
+            const respuesta = await fetch(url);
+            if (!respuesta.ok) throw new Error("Error de conexión");
             
-            // Si el directo terminó
-            if (state == YT.PlayerState.ENDED) {
-                setYTOffline();
-            }
-        }
-
-        function onPlayerError(event) {
-            setYTOffline();
-        }
-
-        function setYTLive(title) {
-            stopYTPolling();
-            loadingBanner.style.display = 'none';
-            offlineBanner.style.display = 'none';
+            const datos = await respuesta.json();
             
-            // Cambia el título de la parte superior de la interfaz por el del Live
-            if (title && title.trim() !== "") {
-                ytTitleText.innerText = title;
-            } else {
-                ytTitleText.innerText = "Transmisión en Vivo";
-            }
-        }
+            if (datos) {
+                // 1. Renderizar Clima Actual (Sensible a Día/Noche)
+                if (datos.current) {
+                    const clima = datos.current;
+                    const esDia = clima.is_day === 1; // true si es de día, false si es de noche
 
-        function setYTOffline() {
-            loadingBanner.style.display = 'none';
-            offlineBanner.style.display = 'flex';
-            ytTitleText.innerText = "No hay transmisión en este momento";
-            startYTPolling();
-        }
-
-        function startYTPolling() {
-            if (!ytPollingInterval) {
-                // Chequear cada 1 minuto recargando el iframe
-                ytPollingInterval = setInterval(() => {
-                    const currentSrc = iframeEl.src;
-                    iframeEl.src = ''; // Forzar recarga limpia
-                    setTimeout(() => { iframeEl.src = currentSrc; }, 100);
-                }, 60000); 
-            }
-        }
-
-        function stopYTPolling() {
-            if (ytPollingInterval) {
-                clearInterval(ytPollingInterval);
-                ytPollingInterval = null;
-            }
-        }
-
-        // --- LÓGICA DE AUDIO (RADIO STREAM) ---
-        
-        // Eventos básicos de estado
-        radioAudio.addEventListener('play', () => {
-            audioStatusText.innerText = 'Conectando...';
-        });
-
-        radioAudio.addEventListener('playing', () => {
-            audioStatusText.innerText = 'Reproduciendo';
-            // Detener reconexión si fue exitosa
-            clearInterval(audioRetryInterval);
-            audioRetryInterval = null;
-            audioRetryTime = 0;
-
-            // EXCLUSIVIDAD: Pausar YouTube si la radio arranca
-            if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
-                const ytState = ytPlayer.getPlayerState();
-                if (ytState === YT.PlayerState.PLAYING || ytState === YT.PlayerState.BUFFERING) {
-                    ytPlayer.pauseVideo();
-                }
-            }
-        });
-
-        radioAudio.addEventListener('pause', () => {
-            if (audioStatusText.innerText !== 'Reconectando...' && audioStatusText.innerText !== 'Desconectado') {
-                audioStatusText.innerText = 'Detenido';
-            }
-        });
-
-        radioAudio.addEventListener('waiting', () => {
-            audioStatusText.innerText = 'Cargando/Buffering...';
-        });
-
-        // Lógica de 60 segundos de reconexión ante cortes
-        function handleAudioError() {
-            if (radioAudio.paused && audioStatusText.innerText !== 'Reconectando...') return; 
-
-            audioStatusText.innerText = 'Reconectando...';
-            
-            if (!audioRetryInterval) {
-                audioRetryInterval = setInterval(() => {
-                    audioRetryTime += 5000; 
+                    document.getElementById('smn-temp').innerText = `${Math.round(clima.temperature_2m)}°C`;
+                    document.getElementById('smn-humedad').innerText = `${clima.relative_humidity_2m}%`;
+                    document.getElementById('smn-viento').innerText = `${Math.round(clima.wind_speed_10m)} km/h (${obtenerDireccionViento(clima.wind_direction_10m)})`;
+                    document.getElementById('smn-presion').innerText = `${Math.round(clima.pressure_msl)} hPa`;
                     
-                    if (audioRetryTime >= maxRetryTime) {
-                        clearInterval(audioRetryInterval);
-                        audioRetryInterval = null;
-                        audioRetryTime = 0;
-                        audioStatusText.innerText = 'Desconectado';
-                        radioAudio.pause();
+                    // Pasamos la bandera esDia a la función de íconos
+                    const infoClima = interpretarCodigoWMO(clima.weather_code, esDia);
+                    document.getElementById('smn-desc').innerText = infoClima.texto;
+                    document.getElementById('smn-icono').innerHTML = infoClima.icono;
+                }
+
+                // 2. Renderizar Pronóstico Extendido (Siempre usa íconos de día por defecto)
+                if (datos.daily) {
+                    const daily = datos.daily;
+                    let htmlExtendido = '';
+                    
+                    for (let i = 0; i < 3; i++) {
+                        // Forzamos que sea true (Día) para el extendido diario general
+                        const infoDia = interpretarCodigoWMO(daily.weather_code[i], true);
+                        const nombreDia = obtenerNombreDia(daily.time[i], i);
+                        const max = Math.round(daily.temperature_2m_max[i]);
+                        const min = Math.round(daily.temperature_2m_min[i]);
                         
-                        radioAudio.src = "https://01.solumedia.com.ar:8014/stream?icy=http"; 
-                    } else {
-                        const timestamp = new Date().getTime();
-                        radioAudio.src = "https://01.solumedia.com.ar:8014/stream?icy=http&t=" + timestamp;
-                        radioAudio.play().catch(e => {});
+                        htmlExtendido += `
+                            <div class="dia-pronostico">
+                                <span class="dia-nombre">${nombreDia}</span>
+                                <div class="dia-icono">${infoDia.icono}</div>
+                                <div class="dia-temps">
+                                    <span class="temp-max">${max}°</span><span class="temp-min">${min}°</span>
+                                </div>
+                            </div>
+                        `;
                     }
-                }, 5000);
+                    document.getElementById('contenedor-extendido').innerHTML = htmlExtendido;
+                }
             }
+        } catch (error) {
+            console.error("Error al obtener el clima:", error);
+            document.getElementById('smn-desc').innerText = "Error de conexión";
         }
+    }
 
-        radioAudio.addEventListener('error', handleAudioError);
-        radioAudio.addEventListener('stalled', handleAudioError);
+    // Traduce códigos de la WMO a texto e íconos, ahora discriminando Día y Noche
+    function interpretarCodigoWMO(codigo, esDia) {
+        switch (codigo) {
+            case 0: // Despejado
+                return { 
+                    texto: "Despejado", 
+                    icono: esDia 
+                        ? '<i class="bi bi-sun" style="color: #ffca28;"></i>' 
+                        : '<i class="bi bi-moon-stars" style="color: #e0e0e0;"></i>' 
+                };
+            case 1: case 2: // Algo nublado / Parcialmente Nublado
+                return { 
+                    texto: "Algo nublado", 
+                    icono: esDia 
+                        ? '<i class="bi bi-cloud-sun" style="color: #e0e0e0;"></i>' 
+                        : '<i class="bi bi-cloud-moon" style="color: #b0bec5;"></i>' 
+                };
+            case 3: 
+                return { texto: "Cubierto", icono: '<i class="bi bi-cloud" style="color: #b0bec5;"></i>' };
+            case 45: case 48: 
+                return { texto: "Niebla", icono: '<i class="bi bi-cloud-haze" style="color: #cfd8dc;"></i>' };
+            case 51: case 53: case 55: 
+                return { texto: "Llovizna", icono: '<i class="bi bi-cloud-drizzle" style="color: #4fc3f7;"></i>' };
+            case 61: case 63: case 65: 
+                return { texto: "Lluvia", icono: '<i class="bi bi-cloud-rain-heavy" style="color: #4fc3f7;"></i>' };
+            case 71: case 73: case 75: 
+                return { texto: "Nevada", icono: '<i class="bi bi-snowflake" style="color: #e0e0e0;"></i>' };
+            case 80: case 81: case 82: 
+                return { texto: "Chubascos", icono: '<i class="bi bi-cloud-rain" style="color: #4fc3f7;"></i>' };
+            case 95: case 96: case 99: 
+                return { texto: "Tormenta", icono: '<i class="bi bi-cloud-lightning-rain" style="color: #b0bec5;"></i>' };
+            default: 
+                return { texto: "Nublado", icono: '<i class="bi bi-cloud" style="color: #e0e0e0;"></i>' };
+        }
+    }
 
-    </script>
+    function obtenerDireccionViento(grados) {
+        const direcciones = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+        return direcciones[Math.round(((grados % 360) / 45)) % 8];
+    }
+
+    function obtenerNombreDia(fechaStr, indice) {
+        if (indice === 0) return 'Hoy';
+        if (indice === 1) return 'Mañ';
+        const fecha = new Date(fechaStr + 'T00:00:00');
+        return fecha.toLocaleDateString('es-AR', { weekday: 'short' }).replace('.', '');
+    }
+
+    obtenerClima();
+    setInterval(obtenerClima, 15 * 60 * 1000);
+</script>
+
 </body>
 </html>
