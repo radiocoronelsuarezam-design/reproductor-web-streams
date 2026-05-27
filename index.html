@@ -23,14 +23,17 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
-            height: 100vh;
+            min-height: 100vh; /* Cambiado a min-height para evitar desbordes extremos */
             justify-content: center;
             align-items: center;
+            box-sizing: border-box;
         }
 
         .media-player-container {
-            width: 100%;
-            max-width: 600px;
+            width: 90vmin;    /* Se adapta proporcionalmente al lado más corto de la ventana (ancho o alto) */
+            max-width: 600px; /* Límite máximo para pantallas grandes */
+            max-height: 90vh; /* Evita que el contenedor colapse o se corte en pantallas bajas */
+            
             background: var(--container-bg);
             border-radius: var(--radius);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -109,7 +112,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .audio-title {
@@ -169,8 +172,8 @@
                 
                 <div id="offline-banner" class="offline-banner" style="display: none;">
                     <div class="offline-icon">📡</div>
-                    <h3>No hay transmisión en este momento</h3>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Buscando nuevos directos de @radiocoronelsuarez...</p>
+                    <h3 style="margin: 0;">No hay transmisión en este momento</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 10px 0;">Buscando nuevos directos de @radiocoronelsuarez...</p>
                 </div>
             </div>
         </div>
@@ -215,7 +218,6 @@
         }
 
         function onPlayerReady(event) {
-            // Evaluamos si cargó un video o si está vacío (offline)
             const videoData = ytPlayer.getVideoData();
             if (!videoData || !videoData.video_id) {
                 setYTOffline();
@@ -227,21 +229,18 @@
         function onPlayerStateChange(event) {
             const state = event.data;
             
-            // Evaluamos con comparación flexible por posibles variaciones de la API
             if (state == YT.PlayerState.PLAYING) {
                 const videoData = ytPlayer.getVideoData();
                 if (videoData && videoData.title) {
                     setYTLive(videoData.title);
                 }
                 
-                // EXCLUSIVIDAD: Pausar la radio si el video arranca
                 if (!radioAudio.paused) {
                     radioAudio.pause();
                     audioStatusText.innerText = 'Detenido';
                 }
             }
             
-            // Si el directo terminó
             if (state == YT.PlayerState.ENDED) {
                 setYTOffline();
             }
@@ -256,7 +255,6 @@
             loadingBanner.style.display = 'none';
             offlineBanner.style.display = 'none';
             
-            // Cambia el título de la parte superior de la interfaz por el del Live
             if (title && title.trim() !== "") {
                 ytTitleText.innerText = title;
             } else {
@@ -273,10 +271,9 @@
 
         function startYTPolling() {
             if (!ytPollingInterval) {
-                // Chequear cada 1 minuto recargando el iframe
                 ytPollingInterval = setInterval(() => {
                     const currentSrc = iframeEl.src;
-                    iframeEl.src = ''; // Forzar recarga limpia
+                    iframeEl.src = ''; 
                     setTimeout(() => { iframeEl.src = currentSrc; }, 100);
                 }, 60000); 
             }
@@ -291,19 +288,16 @@
 
         // --- LÓGICA DE AUDIO (RADIO STREAM) ---
         
-        // Eventos básicos de estado
         radioAudio.addEventListener('play', () => {
             audioStatusText.innerText = 'Conectando...';
         });
 
         radioAudio.addEventListener('playing', () => {
             audioStatusText.innerText = 'Reproduciendo';
-            // Detener reconexión si fue exitosa
             clearInterval(audioRetryInterval);
             audioRetryInterval = null;
             audioRetryTime = 0;
 
-            // EXCLUSIVIDAD: Pausar YouTube si la radio arranca
             if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
                 const ytState = ytPlayer.getPlayerState();
                 if (ytState === YT.PlayerState.PLAYING || ytState === YT.PlayerState.BUFFERING) {
@@ -322,7 +316,6 @@
             audioStatusText.innerText = 'Cargando/Buffering...';
         });
 
-        // Lógica de 60 segundos de reconexión ante cortes
         function handleAudioError() {
             if (radioAudio.paused && audioStatusText.innerText !== 'Reconectando...') return; 
 
