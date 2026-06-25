@@ -7,13 +7,20 @@
     <style>
         /* Diseño principal y responsivo */
         :root {
+            /* Colores Base y Video */
             --bg-color: #1e1e24;
             --container-bg: #2b2b36;
             --text-main: #f5f5f5;
             --text-muted: #a0a0a0;
-            --accent: #e63946;
-            --accent-hover: #d62828;
+            --accent-yt: #e63946;
             --radius: 12px;
+            
+            /* Nuevos Colores Identidad Logo Radio */
+            --radio-blue-dark: #0a1f30;
+            --radio-blue-light: #164366;
+            --radio-green: #8ec63f;
+            --radio-green-hover: #9fd64f;
+            --radio-panel-bg: rgba(0, 0, 0, 0.25);
         }
 
         body {
@@ -23,7 +30,7 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
-            min-height: 100vh; /* Cambiado a min-height para evitar desbordes extremos */
+            min-height: 100vh;
             justify-content: center;
             align-items: center;
             box-sizing: border-box;
@@ -33,28 +40,26 @@
         }
 
         .media-player-container {
-            width: 90vmin;    /* Se adapta proporcionalmente al lado más corto de la ventana (ancho o alto) */
-            max-width: 600px; /* Límite máximo para pantallas grandes */
-            max-height: 90vh; /* Evita que el contenedor colapse o se corte en pantallas bajas */
-            
+            width: 90vmin;
+            max-width: 600px;
+            max-height: 90vh;
             background: var(--container-bg);
             border-radius: var(--radius);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        /* Sección de Video */
+        /* --- Sección de Video --- */
         .video-section {
             width: 100%;
-            border-bottom: 2px solid #1e1e24;
             position: relative;
         }
 
         .video-header {
             padding: 15px 20px;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.3);
         }
 
         .video-title {
@@ -64,12 +69,22 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .yt-title-icon {
+            width: 20px;
+            height: 20px;
+            fill: var(--accent-yt);
+            flex-shrink: 0;
         }
 
         .video-wrapper {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* Relación de aspecto 16:9 */
+            padding-top: 56.25%;
             background-color: #000;
         }
 
@@ -88,7 +103,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #2b2b36 0%, #1e1e24 100%);
+            background: linear-gradient(135deg, #2b2b36 0%, #1a1a20 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -99,58 +114,191 @@
             box-sizing: border-box;
         }
 
-        .offline-icon {
-            font-size: 3rem;
+        .offline-icon svg {
+            width: 45px;
+            height: 45px;
             margin-bottom: 15px;
-            color: var(--text-muted);
+            stroke: var(--text-muted);
         }
 
-        /* Sección de Audio */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .spinner { 
+            animation: spin 2s linear infinite;
+            display: block;
+            transform-origin: 50% 50%;
+            margin: 0 auto;
+        }
+
+        /* --- Sección de Audio --- */
         .audio-section {
-            padding: 20px;
-            background: var(--container-bg);
+            padding: 22px 20px;
+            background: linear-gradient(135deg, var(--radio-blue-light) 0%, var(--radio-blue-dark) 100%);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .audio-header {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 18px;
+            gap: 12px;
         }
 
-        .audio-title {
-            margin: 0;
-            font-size: 1.2rem;
+        /* --- Estilo Píldora Radio --- */
+        .radio-pill {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 6px;
+            overflow: hidden;
+            background: transparent;
+            color: var(--text-muted);
+            transition: color 0.3s ease;
+        }
+
+        .pill-label {
+            padding: 5px 14px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .status-badge-inner {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 14px;
+            border-left: 1px solid rgba(255, 255, 255, 0.5);;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
         }
 
         .live-indicator {
-            width: 10px;
-            height: 10px;
-            background-color: var(--accent);
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             display: inline-block;
-            animation: pulse 1.5s infinite;
+            background-color: var(--dot-color, #888);
+            box-shadow: 0 0 0 0 var(--dot-glow, transparent);
+            animation: pulse-dynamic 1.5s infinite;
         }
 
-        .audio-status {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            font-style: italic;
+        @keyframes pulse-dynamic {
+            0% { box-shadow: 0 0 0 0 var(--dot-glow); }
+            70% { box-shadow: 0 0 0 6px rgba(0,0,0,0); }
+            100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); }
         }
 
-        audio {
+        .status-stopped { --dot-color: #6c757d; color: #a0a0a0; animation: none; }
+        .status-playing { 
+            --dot-color: var(--radio-green); 
+            --dot-glow: rgba(142, 198, 63, 0.6); 
+            color: var(--radio-green); 
+        }
+        .status-loading { 
+            --dot-color: #FF9800; 
+            --dot-glow: rgba(255, 152, 0, 0.6); 
+            color: #FF9800;
+        }
+        .status-error { 
+            --dot-color: #e63946; 
+            --dot-glow: rgba(230, 57, 70, 0.6); 
+            color: #e63946;
+        }
+
+        .custom-audio-player {
+            display: flex;
+            align-items: center;
+            background: var(--radio-panel-bg);
+            padding: 12px 18px;
+            border-radius: 8px;
+            gap: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .play-btn {
+            background: var(--radio-green); 
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: var(--radio-blue-dark); 
+            transition: background 0.2s, transform 0.1s;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(142, 198, 63, 0.3);
+        }
+
+        .play-btn:hover { background: var(--radio-green-hover); }
+        .play-btn:active { transform: scale(0.95); }
+        .play-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-grow: 1;
+        }
+
+        .mute-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .mute-btn:hover { color: #ffffff; }
+        .mute-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
             width: 100%;
-            height: 40px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
             outline: none;
+            cursor: pointer;
         }
 
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(230, 57, 70, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0); }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--text-main);
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            border: none;
+            border-radius: 50%;
+            background: var(--text-main);
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover { 
+            background: var(--radio-green); 
+            transform: scale(1.2);
+        }
+        input[type="range"]::-moz-range-thumb:hover { 
+            background: var(--radio-green); 
+            transform: scale(1.2);
         }
     </style>
 </head>
@@ -159,11 +307,25 @@
     <div class="media-player-container">
         <div class="video-section">
             <div class="video-header">
-                <h2 id="yt-status-title" class="video-title">Buscando transmisión...</h2>
+                <h2 id="yt-status-title" class="video-title">
+                    <svg class="yt-title-icon" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    <span>YouTube Live Stream</span>
+                </h2>
             </div>
             <div class="video-wrapper">
                 <div id="loading-banner" class="offline-banner" style="display: flex;">
-                    <div class="offline-icon">⏳</div>
+                    <div class="offline-icon">
+                        <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="2" x2="12" y2="6"></line>
+                            <line x1="12" y1="18" x2="12" y2="22"></line>
+                            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                            <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                            <line x1="2" y1="12" x2="6" y2="12"></line>
+                            <line x1="18" y1="12" x2="22" y2="12"></line>
+                            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                            <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                        </svg>
+                    </div>
                     <h3>Buscando transmisión...</h3>
                 </div>
 
@@ -174,7 +336,9 @@
                 </iframe>
                 
                 <div id="offline-banner" class="offline-banner" style="display: none;">
-                    <div class="offline-icon">📡</div>
+                    <div class="offline-icon">
+                        <img src="logos_radios.png" alt="Radio Coronel Suárez" style="width: 100%; max-width: 250px; height: auto; margin-bottom: 10px;">
+                    </div>
                     <h3 style="margin: 0;">No hay transmisión en este momento</h3>
                     <p style="color: var(--text-muted); font-size: 0.85rem; margin: 10px 0;">Buscando nuevos directos de @radiocoronelsuarez...</p>
                 </div>
@@ -183,38 +347,189 @@
 
         <div class="audio-section">
             <div class="audio-header">
-                <h2 class="audio-title"><span class="live-indicator"></span> Radio en vivo</h2>
-                <span id="audio-status" class="audio-status">Detenido</span>
+                <div id="status-badge" class="radio-pill status-stopped">
+                    <span style="color: #fff;" class="pill-label">Radio en vivo</span>
+                    <div class="status-badge-inner">
+                        <span id="status-dot" class="live-indicator"></span>
+                        <span id="audio-status">Detenido</span>
+                    </div>
+                </div>
             </div>
-            <audio id="radio-audio" controls preload="none">
+            
+            <div class="custom-audio-player">
+                <button id="play-pause-btn" class="play-btn" title="Reproducir">
+                    <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="icon-pause" viewBox="0 0 24 24" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </button>
+                
+                <div class="volume-control">
+                    <button id="mute-btn" class="mute-btn" title="Silenciar">
+                        <svg id="icon-vol-up" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                        <svg id="icon-vol-mute" viewBox="0 0 24 24" style="display: none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                    </button>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+                </div>
+            </div>
+
+            <audio id="radio-audio" preload="none" style="display: none;">
                 <source src="https://01.solumedia.com.ar:8014/stream?icy=http" type="audio/mpeg">
-                Tu navegador no soporta el elemento de audio.
             </audio>
         </div>
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        // --- VARIABLES GLOBALES ---
+        // --- VARIABLES GLOBALES YOUTUBE ---
         let ytPlayer;
         let ytPollingInterval;
+        
+        // --- VARIABLES GLOBALES AUDIO ---
         let audioRetryInterval;
         let audioRetryTime = 0;
-        const maxRetryTime = 60000; // 60 segundos de reconexión
+        const maxRetryTime = 60000;
+        let previousVolume = 1;
 
+        // Elementos UI
         const radioAudio = document.getElementById('radio-audio');
         const audioStatusText = document.getElementById('audio-status');
+        const statusBadge = document.getElementById('status-badge');
         const ytTitleText = document.getElementById('yt-status-title');
         const loadingBanner = document.getElementById('loading-banner');
         const offlineBanner = document.getElementById('offline-banner');
         const iframeEl = document.getElementById('yt-player');
 
+        // Elementos Reproductor Custom
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const iconPlay = document.getElementById('icon-play');
+        const iconPause = document.getElementById('icon-pause');
+        const muteBtn = document.getElementById('mute-btn');
+        const iconVolUp = document.getElementById('icon-vol-up');
+        const iconVolMute = document.getElementById('icon-vol-mute');
+        const volumeSlider = document.getElementById('volume-slider');
+
+        // Plantilla HTML estática para el estado offline del título de YouTube
+        const ytOfflineTitleHTML = `<svg class="yt-title-icon" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span>YouTube Live Stream</span>`;
+
+        // --- FUNCIÓN DE ESTADO DINÁMICO AUDIO ---
+        function setAudioUIState(text, stateClass) {
+            audioStatusText.innerText = text;
+            statusBadge.className = `radio-pill ${stateClass}`;
+        }
+
+        // --- LÓGICA REPRODUCTOR CUSTOM ---
+        playPauseBtn.addEventListener('click', () => {
+            if (radioAudio.paused) {
+                radioAudio.play().catch(e => console.log("Esperando interacción del usuario..."));
+            } else {
+                radioAudio.pause();
+            }
+        });
+
+        // Eventos del Audio Nativo actualizando el UI Custom
+        radioAudio.addEventListener('play', () => {
+            iconPlay.style.display = 'none';
+            iconPause.style.display = 'block';
+            setAudioUIState('Conectando...', 'status-loading');
+        });
+
+        radioAudio.addEventListener('playing', () => {
+            iconPlay.style.display = 'none';
+            iconPause.style.display = 'block';
+            setAudioUIState('Reproduciendo', 'status-playing');
+            
+            clearInterval(audioRetryInterval);
+            audioRetryInterval = null;
+            audioRetryTime = 0;
+
+            // Exclusión Mutua: Pausar YouTube si arranca la radio
+            if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
+                const ytState = ytPlayer.getPlayerState();
+                if (ytState === YT.PlayerState.PLAYING || ytState === YT.PlayerState.BUFFERING) {
+                    ytPlayer.pauseVideo();
+                }
+            }
+        });
+
+        radioAudio.addEventListener('pause', () => {
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            if (audioStatusText.innerText !== 'Reconectando...' && audioStatusText.innerText !== 'Desconectado') {
+                setAudioUIState('Detenido', 'status-stopped');
+            }
+        });
+
+        radioAudio.addEventListener('waiting', () => {
+            setAudioUIState('Cargando...', 'status-loading');
+        });
+
+        // Lógica de Volumen
+        volumeSlider.addEventListener('input', (e) => {
+            const vol = parseFloat(e.target.value);
+            radioAudio.volume = vol;
+            if (vol > 0) {
+                radioAudio.muted = false;
+                previousVolume = vol;
+                iconVolUp.style.display = 'block';
+                iconVolMute.style.display = 'none';
+            } else {
+                iconVolUp.style.display = 'none';
+                iconVolMute.style.display = 'block';
+            }
+        });
+
+        muteBtn.addEventListener('click', () => {
+            if (radioAudio.volume > 0 || !radioAudio.muted) {
+                radioAudio.muted = true;
+                radioAudio.volume = 0;
+                volumeSlider.value = 0;
+                iconVolUp.style.display = 'none';
+                iconVolMute.style.display = 'block';
+            } else {
+                radioAudio.muted = false;
+                radioAudio.volume = previousVolume > 0.1 ? previousVolume : 1;
+                volumeSlider.value = radioAudio.volume;
+                iconVolUp.style.display = 'block';
+                iconVolMute.style.display = 'none';
+            }
+        });
+
+        // --- SISTEMA DE RECONEXIÓN AUDIO ---
+        function handleAudioError() {
+            if (radioAudio.paused && audioStatusText.innerText !== 'Reconectando...') return; 
+
+            setAudioUIState('Reconectando...', 'status-loading');
+            iconPlay.style.display = 'none';
+            iconPause.style.display = 'block';
+            
+            if (!audioRetryInterval) {
+                audioRetryInterval = setInterval(() => {
+                    audioRetryTime += 5000; 
+                    
+                    if (audioRetryTime >= maxRetryTime) {
+                        clearInterval(audioRetryInterval);
+                        audioRetryInterval = null;
+                        audioRetryTime = 0;
+                        setAudioUIState('Desconectado', 'status-error');
+                        radioAudio.pause();
+                        iconPlay.style.display = 'block';
+                        iconPause.style.display = 'none';
+                        radioAudio.src = "https://01.solumedia.com.ar:8014/stream?icy=http"; 
+                    } else {
+                        const timestamp = new Date().getTime();
+                        radioAudio.src = "https://01.solumedia.com.ar:8014/stream?icy=http&t=" + timestamp;
+                        radioAudio.play().catch(e => {});
+                    }
+                }, 5000);
+            }
+        }
+
+        radioAudio.addEventListener('error', handleAudioError);
+        radioAudio.addEventListener('stalled', handleAudioError);
+
         // --- LÓGICA DE YOUTUBE ---
         function onYouTubeIframeAPIReady() {
             ytPlayer = new YT.Player('yt-player', {
-                playerVars: {
-                    'fs': 1 // Fuerza a que se habilite el botón de pantalla completa
-                },
+                playerVars: { 'fs': 1 },
                 events: {
                     'onReady': onPlayerReady,
                     'onStateChange': onPlayerStateChange,
@@ -241,9 +556,9 @@
                     setYTLive(videoData.title);
                 }
                 
+                // Exclusión Mutua: Pausar Radio si arranca YouTube
                 if (!radioAudio.paused) {
                     radioAudio.pause();
-                    audioStatusText.innerText = 'Detenido';
                 }
             }
             
@@ -252,9 +567,7 @@
             }
         }
 
-        function onPlayerError(event) {
-            setYTOffline();
-        }
+        function onPlayerError(event) { setYTOffline(); }
 
         function setYTLive(title) {
             stopYTPolling();
@@ -271,7 +584,7 @@
         function setYTOffline() {
             loadingBanner.style.display = 'none';
             offlineBanner.style.display = 'flex';
-            ytTitleText.innerText = "No hay transmisión en este momento";
+            ytTitleText.innerHTML = ytOfflineTitleHTML;
             startYTPolling();
         }
 
@@ -291,66 +604,6 @@
                 ytPollingInterval = null;
             }
         }
-
-        // --- LÓGICA DE AUDIO (RADIO STREAM) ---
-        
-        radioAudio.addEventListener('play', () => {
-            audioStatusText.innerText = 'Conectando...';
-        });
-
-        radioAudio.addEventListener('playing', () => {
-            audioStatusText.innerText = 'Reproduciendo';
-            clearInterval(audioRetryInterval);
-            audioRetryInterval = null;
-            audioRetryTime = 0;
-
-            if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
-                const ytState = ytPlayer.getPlayerState();
-                if (ytState === YT.PlayerState.PLAYING || ytState === YT.PlayerState.BUFFERING) {
-                    ytPlayer.pauseVideo();
-                }
-            }
-        });
-
-        radioAudio.addEventListener('pause', () => {
-            if (audioStatusText.innerText !== 'Reconectando...' && audioStatusText.innerText !== 'Desconectado') {
-                audioStatusText.innerText = 'Detenido';
-            }
-        });
-
-        radioAudio.addEventListener('waiting', () => {
-            audioStatusText.innerText = 'Cargando/Buffering...';
-        });
-
-        function handleAudioError() {
-            if (radioAudio.paused && audioStatusText.innerText !== 'Reconectando...') return; 
-
-            audioStatusText.innerText = 'Reconectando...';
-            
-            if (!audioRetryInterval) {
-                audioRetryInterval = setInterval(() => {
-                    audioRetryTime += 5000; 
-                    
-                    if (audioRetryTime >= maxRetryTime) {
-                        clearInterval(audioRetryInterval);
-                        audioRetryInterval = null;
-                        audioRetryTime = 0;
-                        audioStatusText.innerText = 'Desconectado';
-                        radioAudio.pause();
-                        
-                        radioAudio.src = "https://01.solumedia.com.ar:8014/stream?icy=http"; 
-                    } else {
-                        const timestamp = new Date().getTime();
-                        radioAudio.src = "https://01.solumedia.com.ar:8014/stream?icy=http&t=" + timestamp;
-                        radioAudio.play().catch(e => {});
-                    }
-                }, 5000);
-            }
-        }
-
-        radioAudio.addEventListener('error', handleAudioError);
-        radioAudio.addEventListener('stalled', handleAudioError);
-
     </script>
 </body>
 </html>
