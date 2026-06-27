@@ -26,7 +26,6 @@
         body {
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            /*padding: 20px;*/
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
@@ -170,7 +169,7 @@
             gap: 8px;
             background: rgba(0, 0, 0, 0.2);
             padding: 5px 14px;
-            border-left: 1px solid rgba(255, 255, 255, 0.5);;
+            border-left: 1px solid rgba(255, 255, 255, 0.5);
             font-size: 12px;
             text-transform: uppercase;
             font-weight: 600;
@@ -213,11 +212,9 @@
         .custom-audio-player {
             display: flex;
             align-items: center;
-            /*background: var(--radio-panel-bg);*/
             padding: 0px 18px;
             border-radius: 8px;
             gap: 15px;
-            /*border: 1px solid rgba(255, 255, 255, 0.08);*/
         }
 
         .play-btn {
@@ -316,7 +313,6 @@
 
         @media (max-width: 1024px) {
             .video-title {font-size: 14px;}
-            /*.yt-title-icon {width: 16px; height: 16px;}*/
             .status_ytlive_text {font-size: 18px;}
             .status_ytlive_textsearch {font-size: 12px;}
             .img_logosradios {max-width: 200px;}
@@ -406,6 +402,15 @@
         // --- VARIABLES GLOBALES YOUTUBE ---
         let ytPlayer;
         let ytPollingInterval;
+        
+        // TIMEOUT GLOBAL: Inicia de inmediato al cargar la página
+        // Si en 6 segundos YouTube no responde, forzamos la pantalla offline.
+        let ytLoadTimeout = setTimeout(() => {
+            if (document.getElementById('loading-banner').style.display !== 'none') {
+                console.log("Timeout de API de YouTube alcanzado. Forzando offline.");
+                setYTOffline();
+            }
+        }, 6000);
         
         // --- VARIABLES GLOBALES AUDIO ---
         let audioRetryInterval;
@@ -551,10 +556,8 @@
         radioAudio.addEventListener('stalled', handleAudioError);
 
         // --- LÓGICA DE YOUTUBE ---
-        let ytLoadTimeout; // Temporizador para evitar cuelgues al presionar F5
-
         function onYouTubeIframeAPIReady() {
-            // Limpiamos la instancia previa si existe para evitar conflictos en el polling
+            // Limpiamos la instancia previa si existe
             if (ytPlayer && typeof ytPlayer.destroy === 'function') {
                 try { ytPlayer.destroy(); } catch(e) {}
             }
@@ -566,18 +569,10 @@
                     'onError': onPlayerError
                 }
             });
-
-            // FIX BUG F5: Si la API no responde en 5 segundos, asumimos que no hay vivo
-            clearTimeout(ytLoadTimeout);
-            ytLoadTimeout = setTimeout(() => {
-                if (loadingBanner.style.display !== 'none') {
-                    setYTOffline();
-                }
-            }, 5000);
         }
 
         function onPlayerReady(event) {
-            clearTimeout(ytLoadTimeout); // El reproductor cargó, cancelamos el timeout
+            clearTimeout(ytLoadTimeout); // El reproductor cargó exitosamente
             
             const videoData = ytPlayer.getVideoData();
             // Validamos que haya un video real cargado
@@ -603,7 +598,7 @@
                 }
             }
             
-            // FIX BUG FIN DE TRANSMISIÓN: Manejar múltiples estados de desconexión
+            // FIN DE TRANSMISIÓN
             if (state == YT.PlayerState.ENDED) {
                 setYTOffline();
             }
@@ -615,6 +610,7 @@
         }
 
         function setYTLive(title) {
+            clearTimeout(ytLoadTimeout); // Por seguridad lo limpiamos aquí también
             stopYTPolling();
             loadingBanner.style.display = 'none';
             offlineBanner.style.display = 'none';
@@ -627,6 +623,7 @@
         }
 
         function setYTOffline() {
+            clearTimeout(ytLoadTimeout); 
             loadingBanner.style.display = 'none';
             offlineBanner.style.display = 'flex';
             ytTitleText.innerHTML = ytOfflineTitleHTML;
@@ -636,7 +633,7 @@
         function startYTPolling() {
             if (!ytPollingInterval) {
                 ytPollingInterval = setInterval(() => {
-                    // FIX BUG EXCLUSIÓN MUTUA: Mostrar estado de búsqueda
+                    // Mostrar estado de búsqueda temporalmente mientras recarga
                     loadingBanner.style.display = 'flex';
                     offlineBanner.style.display = 'none';
                     ytTitleText.innerHTML = "<span>Buscando conexión...</span>";
@@ -662,12 +659,22 @@
                     newIframe.style.height = '100%';
                     newIframe.style.border = 'none';
 
-                    // Insertarlo al principio del contenedor
+                    // Insertarlo de vuelta en el contenedor
                     wrapper.insertBefore(newIframe, wrapper.firstChild);
+
+                    // Re-iniciar el temporizador de seguridad para este intento de búsqueda
+                    clearTimeout(ytLoadTimeout);
+                    ytLoadTimeout = setTimeout(() => {
+                        if (document.getElementById('loading-banner').style.display !== 'none') {
+                            setYTOffline();
+                        }
+                    }, 6000);
 
                     // Re-vincular la API de YouTube al nuevo iframe
                     setTimeout(() => {
-                        onYouTubeIframeAPIReady();
+                        if (typeof YT !== 'undefined' && YT.Player) {
+                            onYouTubeIframeAPIReady();
+                        }
                     }, 500);
 
                 }, 60000); 
