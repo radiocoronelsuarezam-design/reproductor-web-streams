@@ -551,19 +551,36 @@
         radioAudio.addEventListener('stalled', handleAudioError);
 
         // --- LÓGICA DE YOUTUBE ---
+        let ytLoadTimeout; // Temporizador para evitar cuelgues al presionar F5
+
         function onYouTubeIframeAPIReady() {
+            // Limpiamos la instancia previa si existe para evitar conflictos en el polling
+            if (ytPlayer && typeof ytPlayer.destroy === 'function') {
+                try { ytPlayer.destroy(); } catch(e) {}
+            }
+
             ytPlayer = new YT.Player('yt-player', {
-                playerVars: { 'fs': 1 },
                 events: {
                     'onReady': onPlayerReady,
                     'onStateChange': onPlayerStateChange,
                     'onError': onPlayerError
                 }
             });
+
+            // FIX BUG F5: Si la API no responde en 5 segundos, asumimos que no hay vivo
+            clearTimeout(ytLoadTimeout);
+            ytLoadTimeout = setTimeout(() => {
+                if (loadingBanner.style.display !== 'none') {
+                    setYTOffline();
+                }
+            }, 5000);
         }
 
         function onPlayerReady(event) {
+            clearTimeout(ytLoadTimeout); // El reproductor cargó, cancelamos el timeout
+            
             const videoData = ytPlayer.getVideoData();
+            // Validamos que haya un video real cargado
             if (!videoData || !videoData.video_id) {
                 setYTOffline();
             } else {
@@ -586,12 +603,16 @@
                 }
             }
             
+            // FIX BUG FIN DE TRANSMISIÓN: Manejar múltiples estados de desconexión
             if (state == YT.PlayerState.ENDED) {
                 setYTOffline();
             }
         }
 
-        function onPlayerError(event) { setYTOffline(); }
+        function onPlayerError(event) { 
+            clearTimeout(ytLoadTimeout);
+            setYTOffline(); 
+        }
 
         function setYTLive(title) {
             stopYTPolling();
@@ -615,9 +636,40 @@
         function startYTPolling() {
             if (!ytPollingInterval) {
                 ytPollingInterval = setInterval(() => {
-                    const currentSrc = iframeEl.src;
-                    iframeEl.src = ''; 
-                    setTimeout(() => { iframeEl.src = currentSrc; }, 100);
+                    // FIX BUG EXCLUSIÓN MUTUA: Mostrar estado de búsqueda
+                    loadingBanner.style.display = 'flex';
+                    offlineBanner.style.display = 'none';
+                    ytTitleText.innerHTML = "<span>Buscando conexión...</span>";
+
+                    // Re-crear el iframe para forzar una carga limpia de YouTube
+                    const wrapper = document.querySelector('.video-wrapper');
+                    const oldIframe = document.getElementById('yt-player');
+                    const currentSrc = oldIframe ? oldIframe.src : "https://www.youtube.com/embed/live_stream?channel=UCoUj9R__8Hj9N5SF90mm5gw&enablejsapi=1";
+                    
+                    if (oldIframe) {
+                        oldIframe.remove();
+                    }
+
+                    const newIframe = document.createElement('iframe');
+                    newIframe.id = 'yt-player';
+                    newIframe.src = currentSrc;
+                    newIframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen');
+                    newIframe.setAttribute('allowfullscreen', '');
+                    newIframe.style.position = 'absolute';
+                    newIframe.style.top = '0';
+                    newIframe.style.left = '0';
+                    newIframe.style.width = '100%';
+                    newIframe.style.height = '100%';
+                    newIframe.style.border = 'none';
+
+                    // Insertarlo al principio del contenedor
+                    wrapper.insertBefore(newIframe, wrapper.firstChild);
+
+                    // Re-vincular la API de YouTube al nuevo iframe
+                    setTimeout(() => {
+                        onYouTubeIframeAPIReady();
+                    }, 500);
+
                 }, 60000); 
             }
         }
