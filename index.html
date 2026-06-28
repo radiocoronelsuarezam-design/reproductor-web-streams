@@ -40,7 +40,7 @@
 
         .media-player-container {
             width: 96vmin;
-            max-width: 600px;
+            max-width: 800px;
             max-height: 96vh;
             background: var(--container-bg);
             border-radius: var(--radius);
@@ -365,7 +365,7 @@
             </div>
         </div>
 
-        <div class="audio-section">
+        <div class="audio-section" id="audiosection">
             <div class="audio-header">
                 <div id="status-badge" class="radio-pill status-stopped">
                     <span style="color: #fff;" class="pill-label">Radio en vivo</span>
@@ -399,6 +399,19 @@
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
+        // --- Detectar si solo mostar player YT
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // 2. Buscamos el parámetro 'hidePlayer'
+        const deactivarVisual = urlParams.get('hideAudioPlayer');
+
+        // 3. Si el parámetro existe y es 'true', actuamos
+        if (deactivarVisual === 'true') {
+            // Cambia 'contenedor-reproductor' por el ID real de tu elemento HTML
+            const reproductorAudio = document.getElementById('audiosection'); 
+            reproductorAudio.style.display = "none";
+        }
+
         // --- VARIABLES GLOBALES YOUTUBE ---
         let ytPlayer;
         let ytPollingInterval;
